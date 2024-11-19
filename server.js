@@ -44,6 +44,42 @@ app.get('/api/activities/:userId', (req, res) => {
   });
 });
 
+// Route to add a new activity
+app.post('/api/activities', (req, res) => {
+  const { user_id, activity_name, activity_category, activity_length, indoors } = req.body;
+
+  const query = `
+    INSERT INTO activities (user_id, activity_name, activity_category, activity_length, indoors) 
+    VALUES (?, ?, ?, ?, ?)
+  `;
+
+  db.query(query, [user_id, activity_name, activity_category, activity_length, indoors], (err, results) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    res.status(201).json({ message: 'Activity added successfully', activityId: results.insertId });
+  });
+});
+
+// Route to delete a specific activity
+app.delete('/api/activities/:id', (req, res) => {
+  const { id } = req.params;
+
+  const query = 'DELETE FROM activities WHERE id = ?';
+  db.query(query, [id], (err, results) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ error: 'Activity not found' });
+    }
+    res.status(200).json({ message: 'Activity deleted successfully' });
+  });
+});
+
+
 // Start the server
 const PORT = 4000; // Backend server port to 4000, IT MUST MATCH THE ONE IN THE REACT APLICATION! 
 app.listen(PORT, () => {
